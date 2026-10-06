@@ -1,0 +1,48 @@
+<twig:Card {{ ...attributes }}>
+    <twig:Card:Header>
+        <twig:Card:Title>Publishing</twig:Card:Title>
+        <twig:Card:Description>Defaults applied to new posts.</twig:Card:Description>
+    </twig:Card:Header>
+    <twig:Card:Content>
+        <form>
+            <twig:Field:Group>
+                <twig:Field:Set>
+                    <twig:Field:Legend variant="label">Notifications</twig:Field:Legend>
+                    <twig:Field:Group class="gap-3">
+                        {% for setting in [
+                            {id: 'auto-publish', label: 'Auto-publish scheduled posts', checked: true},
+                            {id: 'email-digest', label: 'Weekly email digest', checked: false},
+                            {id: 'allow-comments', label: 'Allow comments', checked: true},
+                        ] %}
+                            <twig:Field orientation="horizontal">
+                                <twig:Field:Label for="setting-{{ setting.id }}" class="font-normal">{{ setting.label }}</twig:Field:Label>
+                                <twig:Switch id="setting-{{ setting.id }}" class="ms-auto" :checked="setting.checked" />
+                            </twig:Field>
+                        {% endfor %}
+                    </twig:Field:Group>
+                </twig:Field:Set>
+                <twig:Field:Separator />
+                <twig:Field:Set>
+                    <twig:Field:Legend variant="label">Default visibility</twig:Field:Legend>
+                    <twig:RadioGroup>
+                        {% for visibility, checked in {Public: true, Unlisted: false, Private: false} %}
+                            <twig:Field orientation="horizontal">
+                                <twig:RadioGroup:Item id="visibility-{{ visibility|lower }}" name="visibility" value="{{ visibility|lower }}" :checked="checked" />
+                                <twig:Field:Label for="visibility-{{ visibility|lower }}" class="font-normal">{{ visibility }}</twig:Field:Label>
+                            </twig:Field>
+                        {% endfor %}
+                    </twig:RadioGroup>
+                </twig:Field:Set>
+                <twig:Field>
+                    <twig:Field:Label for="settings-signature">Signature</twig:Field:Label>
+                    <twig:Textarea id="settings-signature" rows="2" placeholder="Thanks for reading!" class="resize-none" />
+                    <twig:Field:Description>Appended to the end of every post.</twig:Field:Description>
+                </twig:Field>
+                <twig:Field orientation="horizontal">
+                    <twig:Button type="button">Save</twig:Button>
+                    <twig:Button type="button" variant="outline">Cancel</twig:Button>
+                </twig:Field>
+            </twig:Field:Group>
+        </form>
+    </twig:Card:Content>
+</twig:Card>

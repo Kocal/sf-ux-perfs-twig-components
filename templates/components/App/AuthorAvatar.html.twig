@@ -1,0 +1,17 @@
+{%- props
+    author,
+    size = 'default'
+-%}
+{%- set palette = [
+    'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300',
+    'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
+    'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+    'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+    'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+] -%}
+<twig:Avatar size="{{ size }}" {{ ...attributes }}>
+    <twig:Avatar:Fallback class="{{ palette[author.id % palette|length] }} font-medium">{{ author.initials }}</twig:Avatar:Fallback>
+    {% if author.online %}
+        <twig:Avatar:Badge class="bg-green-600" />
+    {% endif %}
+</twig:Avatar>

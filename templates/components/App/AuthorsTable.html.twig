@@ -1,0 +1,49 @@
+{%- props
+    author_stats,
+    total_views
+-%}
+<twig:Card {{ ...attributes }}>
+    <twig:Card:Header>
+        <twig:Card:Title>Authors</twig:Card:Title>
+        <twig:Card:Description>{{ author_stats|length }} authors wrote for the blog.</twig:Card:Description>
+    </twig:Card:Header>
+    <twig:Card:Content class="px-0">
+        <twig:Table>
+            <twig:Table:Caption>Share of views is computed over all posts.</twig:Table:Caption>
+            <twig:Table:Header>
+                <twig:Table:Row>
+                    <twig:Table:Head class="ps-4">Author</twig:Table:Head>
+                    <twig:Table:Head class="text-end">Posts</twig:Table:Head>
+                    <twig:Table:Head class="text-end">Published</twig:Table:Head>
+                    <twig:Table:Head class="text-end">Views</twig:Table:Head>
+                    <twig:Table:Head class="w-48 pe-4">Share of views</twig:Table:Head>
+                </twig:Table:Row>
+            </twig:Table:Header>
+            <twig:Table:Body>
+                {% for stats in author_stats %}
+                    {% set share = (stats.views / total_views * 100)|round(1) %}
+                    <twig:Table:Row>
+                        <twig:Table:Cell class="ps-4">
+                            <div class="flex items-center gap-2">
+                                <twig:App:AuthorAvatar :author="stats.author" size="sm" />
+                                <span>{{ stats.author.name }}</span>
+                                {% if stats.author.online %}
+                                    <twig:Badge variant="outline" class="text-green-700 dark:text-green-400">Online</twig:Badge>
+                                {% endif %}
+                            </div>
+                        </twig:Table:Cell>
+                        <twig:Table:Cell class="text-end tabular-nums">{{ stats.posts }}</twig:Table:Cell>
+                        <twig:Table:Cell class="text-end tabular-nums">{{ stats.published }}</twig:Table:Cell>
+                        <twig:Table:Cell class="text-end tabular-nums">{{ stats.views|number_format }}</twig:Table:Cell>
+                        <twig:Table:Cell class="pe-4">
+                            <div class="flex items-center gap-2">
+                                <twig:Progress :value="share" class="h-1.5" aria-label="Share of views of {{ stats.author.name }}" />
+                                <span class="w-12 text-end text-xs tabular-nums text-muted-foreground">{{ share }}%</span>
+                            </div>
+                        </twig:Table:Cell>
+                    </twig:Table:Row>
+                {% endfor %}
+            </twig:Table:Body>
+        </twig:Table>
+    </twig:Card:Content>
+</twig:Card>

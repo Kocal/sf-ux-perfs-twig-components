@@ -1,0 +1,51 @@
+<twig:Dialog id="new-post">
+    <twig:Dialog:Trigger>
+        <twig:Button {{ ...dialog_trigger_attrs }}>
+            <twig:ux:icon name="lucide:plus" data-icon="inline-start" />
+            New post
+        </twig:Button>
+    </twig:Dialog:Trigger>
+    <twig:Dialog:Content class="sm:max-w-lg">
+        <twig:Dialog:Header>
+            <twig:Dialog:Title>New post</twig:Dialog:Title>
+            <twig:Dialog:Description>Start a draft, you can publish it later.</twig:Dialog:Description>
+        </twig:Dialog:Header>
+        <twig:Field:Group>
+            <twig:Field>
+                <twig:Field:Label for="new-post-title">Title</twig:Field:Label>
+                <twig:Input id="new-post-title" name="title" placeholder="How we made our dashboard 10x faster" />
+            </twig:Field>
+            <div class="grid grid-cols-2 gap-4">
+                <twig:Field>
+                    <twig:Field:Label for="new-post-category">Category</twig:Field:Label>
+                    <twig:NativeSelect id="new-post-category" name="category" class="w-full">
+                        {% for category in enum('App\\Model\\PostCategory').cases() %}
+                            <twig:NativeSelect:Option value="{{ category.value }}">{{ category.label }}</twig:NativeSelect:Option>
+                        {% endfor %}
+                    </twig:NativeSelect>
+                </twig:Field>
+                <twig:Field>
+                    <twig:Field:Label for="new-post-reading-time">Reading time</twig:Field:Label>
+                    <twig:InputGroup>
+                        <twig:InputGroup:Input id="new-post-reading-time" type="number" min="1" value="5" />
+                        <twig:InputGroup:Addon align="inline-end">min</twig:InputGroup:Addon>
+                    </twig:InputGroup>
+                </twig:Field>
+            </div>
+            <twig:Field>
+                <twig:Field:Label for="new-post-excerpt">Excerpt</twig:Field:Label>
+                <twig:Textarea id="new-post-excerpt" name="excerpt" rows="3" placeholder="A short summary shown in listings" />
+            </twig:Field>
+            <twig:Field orientation="horizontal">
+                <twig:Checkbox id="new-post-featured" name="featured" />
+                <twig:Field:Label for="new-post-featured" class="font-normal">Feature this post on the homepage</twig:Field:Label>
+            </twig:Field>
+        </twig:Field:Group>
+        <twig:Dialog:Footer>
+            <twig:Dialog:Close>
+                <twig:Button variant="outline" {{ ...dialog_close_attrs }}>Cancel</twig:Button>
+            </twig:Dialog:Close>
+            <twig:Button type="button">Create draft</twig:Button>
+        </twig:Dialog:Footer>
+    </twig:Dialog:Content>
+</twig:Dialog>

@@ -1,0 +1,163 @@
+{%- props
+    page,
+    filters,
+    status_counts,
+    category_counts,
+    per_page_choices
+-%}
+<form method="get" action="{{ path('app_dashboard') }}" data-controller="auto-submit">
+    <twig:Card class="overflow-visible">
+        <twig:Card:Header class="border-b">
+            <twig:Card:Title>Posts</twig:Card:Title>
+            <twig:Card:Description>
+                {{ page.total|number_format }} {{ page.total == 1 ? 'post' : 'posts' }} match your filters.
+            </twig:Card:Description>
+            <twig:Card:Action>
+                <twig:DropdownMenu id="posts-columns" align="end">
+                    <twig:DropdownMenu:Trigger>
+                        <twig:Button {{ ...dropdown_menu_trigger_attrs }} variant="outline" size="sm">
+                            <twig:ux:icon name="lucide:columns-3" data-icon="inline-start" />
+                            Columns
+                            <twig:ux:icon name="lucide:chevron-down" data-icon="inline-end" />
+                        </twig:Button>
+                    </twig:DropdownMenu:Trigger>
+                    <twig:DropdownMenu:Content class="w-44">
+                        <twig:DropdownMenu:Label>Toggle columns</twig:DropdownMenu:Label>
+                        <twig:DropdownMenu:Separator />
+                        {% for column in ['Author', 'Category', 'Status', 'Views', 'Comments', 'Published'] %}
+                            <twig:DropdownMenu:CheckboxItem checked>{{ column }}</twig:DropdownMenu:CheckboxItem>
+                        {% endfor %}
+                    </twig:DropdownMenu:Content>
+                </twig:DropdownMenu>
+            </twig:Card:Action>
+            <div class="col-span-2 mt-3 flex flex-wrap items-center gap-2">
+                <twig:InputGroup class="w-full sm:w-72">
+                    <twig:InputGroup:Input type="search" name="q" value="{{ filters.q }}" placeholder="Filter by title or author..." aria-label="Filter by title or author" />
+                    <twig:InputGroup:Addon>
+                        <twig:ux:icon name="lucide:search" />
+                    </twig:InputGroup:Addon>
+                    {% if filters.q %}
+                        <twig:InputGroup:Addon align="inline-end">{{ page.total }} results</twig:InputGroup:Addon>
+                    {% endif %}
+                </twig:InputGroup>
+                <twig:NativeSelect name="status" size="sm" aria-label="Status" data-action="change->auto-submit#submit">
+                    <twig:NativeSelect:Option value="">All statuses</twig:NativeSelect:Option>
+                    {% for status in enum('App\\Model\\PostStatus').cases() %}
+                        <twig:NativeSelect:Option value="{{ status.value }}" :selected="filters.status == status">{{ status.label }} ({{ status_counts[status.value] }})</twig:NativeSelect:Option>
+                    {% endfor %}
+                </twig:NativeSelect>
+                <twig:NativeSelect name="category" size="sm" aria-label="Category" data-action="change->auto-submit#submit">
+                    <twig:NativeSelect:Option value="">All categories</twig:NativeSelect:Option>
+                    <twig:NativeSelect:OptGroup label="Categories">
+                        {% for category in enum('App\\Model\\PostCategory').cases() %}
+                            <twig:NativeSelect:Option value="{{ category.value }}" :selected="filters.category == category">{{ category.label }} ({{ category_counts[category.value] }})</twig:NativeSelect:Option>
+                        {% endfor %}
+                    </twig:NativeSelect:OptGroup>
+                </twig:NativeSelect>
+                <twig:Select id="posts-sort" name="sort" value="{{ filters.sort.value }}" data-action="select:change->auto-submit#submit">
+                    <twig:Select:Trigger size="sm" class="w-44" aria-label="Sort by">
+                        <twig:ux:icon name="lucide:arrow-down-wide-narrow" class="size-4 text-muted-foreground" />
+                        <twig:Select:Value placeholder="Sort by" />
+                    </twig:Select:Trigger>
+                    <twig:Select:Content>
+                        <twig:Select:Group id="posts-sort-options">
+                            <twig:Select:Label>Sort by</twig:Select:Label>
+                            {% for sort in enum('App\\Model\\PostSort').cases() %}
+                                <twig:Select:Item value="{{ sort.value }}">{{ sort.label }}</twig:Select:Item>
+                            {% endfor %}
+                        </twig:Select:Group>
+                    </twig:Select:Content>
+                </twig:Select>
+                <div class="flex items-center gap-2">
+                    <twig:Switch id="posts-featured" name="featured" value="1" size="sm" :checked="filters.featured" data-action="change->auto-submit#submit" />
+                    <twig:Label for="posts-featured">Featured only</twig:Label>
+                </div>
+                <div class="ms-auto flex items-center gap-2">
+                    <twig:Button type="submit" variant="secondary" size="sm">
+                        <twig:ux:icon name="lucide:list-filter" data-icon="inline-start" />
+                        Apply
+                    </twig:Button>
+                    <twig:Button as="a" href="{{ path('app_dashboard') }}" variant="ghost" size="sm">
+                        <twig:ux:icon name="lucide:x" data-icon="inline-start" />
+                        Reset
+                    </twig:Button>
+                </div>
+            </div>
+        </twig:Card:Header>
+
+        <twig:Card:Content class="px-0 xl:[&_[data-slot=table-container]]:overflow-visible">
+            {% if page.total == 0 %}
+                <twig:Empty>
+                    <twig:Empty:Header>
+                        <twig:Empty:Media variant="icon">
+                            <twig:ux:icon name="lucide:file-search" />
+                        </twig:Empty:Media>
+                        <twig:Empty:Title>No posts found</twig:Empty:Title>
+                        <twig:Empty:Description>No post matches these filters. Try a broader search, or reset the filters.</twig:Empty:Description>
+                    </twig:Empty:Header>
+                    <twig:Empty:Content>
+                        <twig:Button as="a" href="{{ path('app_dashboard') }}" variant="outline">Reset filters</twig:Button>
+                    </twig:Empty:Content>
+                </twig:Empty>
+            {% else %}
+                <twig:Table>
+                    <twig:Table:Header>
+                        <twig:Table:Row>
+                            <twig:Table:Head class="w-8 ps-4">
+                                <twig:Checkbox id="select-all-posts" aria-label="Select all posts" />
+                            </twig:Table:Head>
+                            <twig:Table:Head>Post</twig:Table:Head>
+                            <twig:Table:Head>Author</twig:Table:Head>
+                            <twig:Table:Head class="hidden 2xl:table-cell">Category</twig:Table:Head>
+                            <twig:Table:Head>Status</twig:Table:Head>
+                            <twig:Table:Head class="text-end">
+                                <twig:Button as="a" href="{{ path('app_dashboard', app.request.query.all|merge({sort: 'most-viewed', page: 1})) }}" variant="ghost" size="xs" class="-me-2">
+                                    Views
+                                    <twig:ux:icon name="lucide:arrow-up-down" data-icon="inline-end" />
+                                </twig:Button>
+                            </twig:Table:Head>
+                            <twig:Table:Head class="hidden text-end 2xl:table-cell">
+                                <twig:Button as="a" href="{{ path('app_dashboard', app.request.query.all|merge({sort: 'most-commented', page: 1})) }}" variant="ghost" size="xs" class="-me-2">
+                                    Comments
+                                    <twig:ux:icon name="lucide:arrow-up-down" data-icon="inline-end" />
+                                </twig:Button>
+                            </twig:Table:Head>
+                            <twig:Table:Head>Published</twig:Table:Head>
+                            <twig:Table:Head class="pe-4"><span class="sr-only">Actions</span></twig:Table:Head>
+                        </twig:Table:Row>
+                    </twig:Table:Header>
+                    <twig:Table:Body>
+                        {% for post in page.items %}
+                            <twig:App:PostRow :post="post" />
+                        {% endfor %}
+                    </twig:Table:Body>
+                    <twig:Table:Footer>
+                        <twig:Table:Row>
+                            <twig:Table:Cell colspan="3" class="ps-4">Total on this page</twig:Table:Cell>
+                            <twig:Table:Cell class="hidden 2xl:table-cell"></twig:Table:Cell>
+                            <twig:Table:Cell></twig:Table:Cell>
+                            <twig:Table:Cell class="text-end tabular-nums">{{ page.items|reduce((sum, post) => sum + post.views, 0)|number_format }}</twig:Table:Cell>
+                            <twig:Table:Cell class="hidden 2xl:table-cell text-end tabular-nums">{{ page.items|reduce((sum, post) => sum + post.comments, 0)|number_format }}</twig:Table:Cell>
+                            <twig:Table:Cell colspan="2"></twig:Table:Cell>
+                        </twig:Table:Row>
+                    </twig:Table:Footer>
+                </twig:Table>
+            {% endif %}
+        </twig:Card:Content>
+
+        <twig:Card:Footer class="flex-wrap justify-between gap-4">
+            <p class="text-sm text-muted-foreground">
+                Showing <strong class="text-foreground">{{ page.firstIndex }}-{{ page.lastIndex }}</strong> of <strong class="text-foreground">{{ page.total|number_format }}</strong>
+            </p>
+            <div class="flex items-center gap-2">
+                <twig:Label for="posts-per-page" class="text-muted-foreground">Rows per page</twig:Label>
+                <twig:NativeSelect id="posts-per-page" name="perPage" size="sm" data-action="change->auto-submit#submit">
+                    {% for choice in per_page_choices %}
+                        <twig:NativeSelect:Option value="{{ choice }}" :selected="filters.perPage == choice">{{ choice }}</twig:NativeSelect:Option>
+                    {% endfor %}
+                </twig:NativeSelect>
+            </div>
+            <twig:App:TablePagination :page="page" />
+        </twig:Card:Footer>
+    </twig:Card>
+</form>

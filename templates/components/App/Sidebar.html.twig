@@ -1,0 +1,211 @@
+{%- props
+    status_counts,
+    category_counts,
+    total_posts,
+    current_category = null,
+    current_status = null
+-%}
+<twig:Sidebar collapsible="icon">
+    <twig:Sidebar:Header>
+        <twig:Sidebar:Menu>
+            <twig:Sidebar:MenuItem>
+                <twig:DropdownMenu id="sidebar-team" class="w-full block">
+                    <twig:DropdownMenu:Trigger>
+                        <twig:Sidebar:MenuButton {{ ...dropdown_menu_trigger_attrs }} size="lg" tooltip="Acme Blog">
+                            <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                                <twig:ux:icon name="lucide:command" class="size-4" aria-hidden="true" />
+                            </div>
+                            <div class="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                                <span class="truncate font-semibold">Acme Blog</span>
+                                <span class="truncate text-xs">Enterprise</span>
+                            </div>
+                            <twig:ux:icon name="lucide:chevrons-up-down" class="ms-auto size-4 group-data-[collapsible=icon]:hidden" aria-hidden="true" />
+                        </twig:Sidebar:MenuButton>
+                    </twig:DropdownMenu:Trigger>
+                    <twig:DropdownMenu:Content class="w-56">
+                        <twig:DropdownMenu:Label>Workspaces</twig:DropdownMenu:Label>
+                        {% for index, workspace in ['Acme Blog', 'Acme Docs', 'Acme Newsroom'] %}
+                            <twig:DropdownMenu:Item>
+                                <twig:ux:icon name="lucide:command" aria-hidden="true" />
+                                {{ workspace }}
+                                <twig:DropdownMenu:Shortcut>⌘{{ index + 1 }}</twig:DropdownMenu:Shortcut>
+                            </twig:DropdownMenu:Item>
+                        {% endfor %}
+                        <twig:DropdownMenu:Separator />
+                        <twig:DropdownMenu:Item>
+                            <twig:ux:icon name="lucide:plus" aria-hidden="true" />
+                            Add workspace
+                        </twig:DropdownMenu:Item>
+                    </twig:DropdownMenu:Content>
+                </twig:DropdownMenu>
+            </twig:Sidebar:MenuItem>
+        </twig:Sidebar:Menu>
+    </twig:Sidebar:Header>
+
+    <twig:Sidebar:Content>
+        <twig:Sidebar:Group>
+            <twig:Sidebar:GroupLabel>Platform</twig:Sidebar:GroupLabel>
+            <twig:Sidebar:GroupContent>
+                <twig:Sidebar:Menu>
+                    <twig:Sidebar:MenuItem>
+                        <twig:Sidebar:MenuButton as="a" href="{{ path('app_dashboard') }}" tooltip="Dashboard" :active="current_category is null and current_status is null">
+                            <twig:ux:icon name="lucide:layout-dashboard" aria-hidden="true" />
+                            <span>Dashboard</span>
+                        </twig:Sidebar:MenuButton>
+                    </twig:Sidebar:MenuItem>
+                    <twig:Sidebar:MenuItem>
+                        <twig:Collapsible open class="group/collapsible">
+                            <twig:Collapsible:Trigger>
+                                <twig:Sidebar:MenuButton {{ ...collapsible_trigger_attrs }} tooltip="Posts">
+                                    <twig:ux:icon name="lucide:file-text" aria-hidden="true" />
+                                    <span>Posts</span>
+                                    <twig:ux:icon name="lucide:chevron-right" class="ms-auto transition-transform group-data-[state=open]/collapsible:rotate-90" aria-hidden="true" />
+                                </twig:Sidebar:MenuButton>
+                            </twig:Collapsible:Trigger>
+                            <twig:Collapsible:Content>
+                                <twig:Sidebar:MenuSub>
+                                    {% for status in enum('App\\Model\\PostStatus').cases() %}
+                                        <twig:Sidebar:MenuSubItem>
+                                            <twig:Sidebar:MenuSubButton href="{{ path('app_dashboard', {status: status.value}) }}" :active="current_status == status">
+                                                <span>{{ status.label }}</span>
+                                                <span class="ms-auto text-xs tabular-nums text-muted-foreground">{{ status_counts[status.value] }}</span>
+                                            </twig:Sidebar:MenuSubButton>
+                                        </twig:Sidebar:MenuSubItem>
+                                    {% endfor %}
+                                </twig:Sidebar:MenuSub>
+                            </twig:Collapsible:Content>
+                        </twig:Collapsible>
+                    </twig:Sidebar:MenuItem>
+                    {% for item in [
+                        {label: 'Comments', icon: 'lucide:message-square', badge: 12},
+                        {label: 'Authors', icon: 'lucide:users', badge: null},
+                        {label: 'Media library', icon: 'lucide:image', badge: null},
+                        {label: 'Analytics', icon: 'lucide:chart-line', badge: 'New'},
+                    ] %}
+                        <twig:Sidebar:MenuItem>
+                            <twig:Sidebar:MenuButton as="a" href="#" tooltip="{{ item.label }}">
+                                <twig:ux:icon name="{{ item.icon }}" aria-hidden="true" />
+                                <span>{{ item.label }}</span>
+                            </twig:Sidebar:MenuButton>
+                            {% if item.badge %}
+                                <twig:Sidebar:MenuBadge>{{ item.badge }}</twig:Sidebar:MenuBadge>
+                            {% endif %}
+                        </twig:Sidebar:MenuItem>
+                    {% endfor %}
+                </twig:Sidebar:Menu>
+            </twig:Sidebar:GroupContent>
+        </twig:Sidebar:Group>
+
+        <twig:Sidebar:Group class="group-data-[collapsible=icon]:hidden">
+            <twig:Sidebar:GroupLabel>Categories</twig:Sidebar:GroupLabel>
+            <twig:Sidebar:GroupAction title="Add category">
+                <twig:ux:icon name="lucide:plus" aria-hidden="true" />
+                <span class="sr-only">Add category</span>
+            </twig:Sidebar:GroupAction>
+            <twig:Sidebar:GroupContent>
+                <twig:Sidebar:Menu>
+                    {% for category in enum('App\\Model\\PostCategory').cases() %}
+                        <twig:Sidebar:MenuItem>
+                            <twig:Sidebar:MenuButton as="a" href="{{ path('app_dashboard', {category: category.value}) }}" :active="current_category == category">
+                                <twig:ux:icon name="{{ category.icon }}" aria-hidden="true" />
+                                <span>{{ category.label }}</span>
+                            </twig:Sidebar:MenuButton>
+                            <twig:Sidebar:MenuBadge class="me-6">{{ category_counts[category.value] }}</twig:Sidebar:MenuBadge>
+                            <twig:DropdownMenu id="sidebar-category-{{ category.value }}" side="right" align="start" class="absolute! end-1 top-1.5">
+                                <twig:DropdownMenu:Trigger>
+                                    <twig:Sidebar:MenuAction class="static!" showOnHover {{ ...dropdown_menu_trigger_attrs }}>
+                                        <twig:ux:icon name="lucide:ellipsis" class="size-4" aria-hidden="true" />
+                                        <span class="sr-only">More</span>
+                                    </twig:Sidebar:MenuAction>
+                                </twig:DropdownMenu:Trigger>
+                                <twig:DropdownMenu:Content class="w-44">
+                                    <twig:DropdownMenu:Item>
+                                        <twig:ux:icon name="lucide:folder-open" aria-hidden="true" />
+                                        View posts
+                                    </twig:DropdownMenu:Item>
+                                    <twig:DropdownMenu:Item>
+                                        <twig:ux:icon name="lucide:pencil" aria-hidden="true" />
+                                        Rename
+                                    </twig:DropdownMenu:Item>
+                                    <twig:DropdownMenu:Separator />
+                                    <twig:DropdownMenu:Item class="text-destructive">
+                                        <twig:ux:icon name="lucide:trash-2" aria-hidden="true" />
+                                        Delete
+                                    </twig:DropdownMenu:Item>
+                                </twig:DropdownMenu:Content>
+                            </twig:DropdownMenu>
+                        </twig:Sidebar:MenuItem>
+                    {% endfor %}
+                </twig:Sidebar:Menu>
+            </twig:Sidebar:GroupContent>
+        </twig:Sidebar:Group>
+
+        <twig:Sidebar:Group class="mt-auto">
+            <twig:Sidebar:GroupContent>
+                <twig:Sidebar:Menu>
+                    <twig:Sidebar:MenuItem>
+                        <twig:Sidebar:MenuButton as="a" href="#" size="sm" tooltip="Support">
+                            <twig:ux:icon name="lucide:life-buoy" aria-hidden="true" />
+                            <span>Support</span>
+                        </twig:Sidebar:MenuButton>
+                    </twig:Sidebar:MenuItem>
+                    <twig:Sidebar:MenuItem>
+                        <twig:Sidebar:MenuButton as="a" href="#" size="sm" tooltip="Feedback">
+                            <twig:ux:icon name="lucide:send" aria-hidden="true" />
+                            <span>Feedback</span>
+                        </twig:Sidebar:MenuButton>
+                    </twig:Sidebar:MenuItem>
+                </twig:Sidebar:Menu>
+            </twig:Sidebar:GroupContent>
+        </twig:Sidebar:Group>
+    </twig:Sidebar:Content>
+
+    <twig:Sidebar:Footer>
+        <twig:Sidebar:Menu>
+            <twig:Sidebar:MenuItem>
+                <twig:DropdownMenu id="sidebar-account" side="top" class="w-full block">
+                    <twig:DropdownMenu:Trigger>
+                        <twig:Sidebar:MenuButton {{ ...dropdown_menu_trigger_attrs }} size="lg" tooltip="Leanne Graham">
+                            <twig:Avatar class="rounded-lg">
+                                <twig:Avatar:Fallback class="rounded-lg">LG</twig:Avatar:Fallback>
+                            </twig:Avatar>
+                            <div class="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                                <span class="truncate font-semibold">Leanne Graham</span>
+                                <span class="truncate text-xs">sincere@april.biz</span>
+                            </div>
+                            <twig:ux:icon name="lucide:chevrons-up-down" class="ms-auto size-4 group-data-[collapsible=icon]:hidden" aria-hidden="true" />
+                        </twig:Sidebar:MenuButton>
+                    </twig:DropdownMenu:Trigger>
+                    <twig:DropdownMenu:Content class="w-56">
+                        <twig:DropdownMenu:Label>My account</twig:DropdownMenu:Label>
+                        <twig:DropdownMenu:Item>
+                            <twig:ux:icon name="lucide:sparkles" aria-hidden="true" />
+                            Upgrade to Pro
+                        </twig:DropdownMenu:Item>
+                        <twig:DropdownMenu:Separator />
+                        <twig:DropdownMenu:Group>
+                            <twig:DropdownMenu:Item>
+                                <twig:ux:icon name="lucide:badge-check" aria-hidden="true" />
+                                Account
+                            </twig:DropdownMenu:Item>
+                            <twig:DropdownMenu:Item>
+                                <twig:ux:icon name="lucide:credit-card" aria-hidden="true" />
+                                Billing
+                            </twig:DropdownMenu:Item>
+                            <twig:DropdownMenu:Item>
+                                <twig:ux:icon name="lucide:bell" aria-hidden="true" />
+                                Notifications
+                            </twig:DropdownMenu:Item>
+                        </twig:DropdownMenu:Group>
+                        <twig:DropdownMenu:Separator />
+                        <twig:DropdownMenu:Item>
+                            <twig:ux:icon name="lucide:log-out" aria-hidden="true" />
+                            Log out
+                        </twig:DropdownMenu:Item>
+                    </twig:DropdownMenu:Content>
+                </twig:DropdownMenu>
+            </twig:Sidebar:MenuItem>
+        </twig:Sidebar:Menu>
+    </twig:Sidebar:Footer>
+    <twig:Sidebar:Rail />
+</twig:Sidebar>

@@ -1,0 +1,7 @@
+{%- props
+    status
+-%}
+<twig:Badge variant="{{ status.badgeVariant }}" {{ ...attributes }}>
+    <twig:ux:icon name="{{ status.icon }}" data-icon="inline-start" aria-hidden="true" />
+    {{ status.label }}
+</twig:Badge>

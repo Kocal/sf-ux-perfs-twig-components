@@ -1,0 +1,31 @@
+{%- props
+    posts
+-%}
+<twig:Card {{ ...attributes }}>
+    <twig:Card:Header>
+        <twig:Card:Title>Recent activity</twig:Card:Title>
+        <twig:Card:Description>Latest published posts.</twig:Card:Description>
+    </twig:Card:Header>
+    <twig:Card:Content>
+        <twig:Item:Group class="gap-2">
+            {% for post in posts %}
+                <twig:Item variant="outline" size="sm" as="a" href="#">
+                    <twig:Item:Media>
+                        <twig:App:AuthorAvatar :author="post.author" size="sm" />
+                    </twig:Item:Media>
+                    <twig:Item:Content>
+                        <twig:Item:Title>{{ post.title }}</twig:Item:Title>
+                        <twig:Item:Description>{{ post.author.name }} published in {{ post.category.label }} on {{ post.publishedAt|date('M j') }}</twig:Item:Description>
+                    </twig:Item:Content>
+                    <twig:Item:Actions>
+                        <twig:Badge variant="secondary">
+                            <twig:ux:icon name="lucide:eye" data-icon="inline-start" aria-hidden="true" />
+                            {{ post.views|number_format }}
+                        </twig:Badge>
+                        <twig:ux:icon name="lucide:chevron-right" class="size-4" aria-hidden="true" />
+                    </twig:Item:Actions>
+                </twig:Item>
+            {% endfor %}
+        </twig:Item:Group>
+    </twig:Card:Content>
+</twig:Card>

@@ -1,0 +1,56 @@
+{%- props
+    post
+-%}
+<twig:Table:Row>
+    <twig:Table:Cell class="w-8 ps-4">
+        <twig:Checkbox id="select-post-{{ post.id }}" aria-label="Select post #{{ post.id }}" />
+    </twig:Table:Cell>
+    <twig:Table:Cell>
+        <div class="flex max-w-60 flex-col gap-1 xl:max-w-xs 2xl:max-w-md">
+            <div class="flex items-center gap-1.5">
+                {% if post.featured %}
+                    <twig:ux:icon name="lucide:star" class="size-3.5 shrink-0 fill-amber-400 text-amber-400" aria-label="Featured" />
+                {% endif %}
+                <a href="#" class="truncate font-medium hover:underline">{{ post.title }}</a>
+            </div>
+            <p class="truncate text-xs text-muted-foreground">{{ post.excerpt }}</p>
+            <div class="flex gap-1">
+                {% for tag in post.tags %}
+                    <twig:Badge variant="secondary" class="h-4 px-1.5 text-[10px]">#{{ tag }}</twig:Badge>
+                {% endfor %}
+            </div>
+        </div>
+    </twig:Table:Cell>
+    <twig:Table:Cell>
+        <div class="flex items-center gap-2">
+            <twig:App:AuthorAvatar :author="post.author" size="sm" />
+            <div class="grid leading-tight">
+                <span>{{ post.author.name }}</span>
+                <span class="text-xs text-muted-foreground">@{{ post.author.username }}</span>
+            </div>
+        </div>
+    </twig:Table:Cell>
+    <twig:Table:Cell class="hidden 2xl:table-cell">
+        <twig:Badge variant="outline">
+            <twig:ux:icon name="{{ post.category.icon }}" data-icon="inline-start" aria-hidden="true" />
+            {{ post.category.label }}
+        </twig:Badge>
+    </twig:Table:Cell>
+    <twig:Table:Cell>
+        <twig:App:StatusBadge :status="post.status" />
+    </twig:Table:Cell>
+    <twig:Table:Cell class="text-end tabular-nums">{{ post.views|number_format }}</twig:Table:Cell>
+    <twig:Table:Cell class="hidden text-end tabular-nums 2xl:table-cell">
+        <span class="inline-flex items-center gap-1 text-muted-foreground">
+            <twig:ux:icon name="lucide:message-square" class="size-3.5" aria-hidden="true" />
+            {{ post.comments }}
+        </span>
+    </twig:Table:Cell>
+    <twig:Table:Cell>
+        <time datetime="{{ post.publishedAt|date('c') }}">{{ post.publishedAt|date('M j, Y') }}</time>
+        <span class="block text-xs text-muted-foreground">{{ post.readingTime }} min read</span>
+    </twig:Table:Cell>
+    <twig:Table:Cell class="pe-4">
+        <twig:App:PostActions :post="post" />
+    </twig:Table:Cell>
+</twig:Table:Row>

@@ -1,0 +1,19 @@
+{%- props
+    ## number Delay in milliseconds before showing the content.
+    openDelay = 0,
+    ## number Delay in milliseconds before hiding the content.
+    closeDelay = 0
+-%}
+<span
+    data-slot="hover-card"
+    data-hover-card-open-delay-value="{{ openDelay }}"
+    data-hover-card-close-delay-value="{{ closeDelay }}"
+    {{ attributes.defaults({
+        class: 'relative inline-block'|tailwind_classes,
+        'data-controller': 'hover-card',
+        'data-action': 'mouseenter->hover-card#show mouseleave->hover-card#hide',
+    }) }}
+>
+    {##- The hover card structure, typically a `HoverCard:Trigger` and `HoverCard:Content`. -#}
+    {%- block content %}{% endblock -%}
+</span>

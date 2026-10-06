@@ -1,0 +1,23 @@
+{%- props
+    category_counts,
+    total_posts
+-%}
+<twig:Card {{ ...attributes }}>
+    <twig:Card:Header>
+        <twig:Card:Title>Categories</twig:Card:Title>
+        <twig:Card:Description>Share of posts per category.</twig:Card:Description>
+    </twig:Card:Header>
+    <twig:Card:Content class="flex flex-col gap-4">
+        {% for category in enum('App\\Model\\PostCategory').cases() %}
+            {% set count = category_counts[category.value] %}
+            <div class="flex flex-col gap-1.5">
+                <div class="flex items-center gap-2 text-sm">
+                    <twig:ux:icon name="{{ category.icon }}" class="size-4 text-muted-foreground" aria-hidden="true" />
+                    <a href="{{ path('app_dashboard', {category: category.value}) }}" class="font-medium hover:underline">{{ category.label }}</a>
+                    <span class="ms-auto tabular-nums text-muted-foreground">{{ count }}</span>
+                </div>
+                <twig:Progress :value="(count / total_posts * 100)|round" class="h-1.5" aria-label="{{ category.label }}" />
+            </div>
+        {% endfor %}
+    </twig:Card:Content>
+</twig:Card>

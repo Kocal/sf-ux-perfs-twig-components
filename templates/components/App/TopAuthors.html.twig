@@ -1,0 +1,45 @@
+{%- props
+    author_stats,
+    limit = 5
+-%}
+<twig:Card {{ ...attributes }}>
+    <twig:Card:Header>
+        <twig:Card:Title>Top authors</twig:Card:Title>
+        <twig:Card:Description>Ranked by total views.</twig:Card:Description>
+        <twig:Card:Action>
+            <twig:Button variant="ghost" size="icon-sm" aria-label="Refresh">
+                <twig:ux:icon name="lucide:refresh-cw" />
+            </twig:Button>
+        </twig:Card:Action>
+    </twig:Card:Header>
+    <twig:Card:Content>
+        <twig:Item:Group>
+            {% for rank, stats in author_stats|slice(0, limit) %}
+                {% if rank > 0 %}<twig:Item:Separator />{% endif %}
+                <twig:Item size="sm" class="px-0">
+                    <twig:Item:Media>
+                        <twig:App:AuthorAvatar :author="stats.author" />
+                    </twig:Item:Media>
+                    <twig:Item:Content>
+                        <twig:Item:Title>
+                            <twig:HoverCard openDelay="200" closeDelay="100">
+                                <twig:HoverCard:Trigger>
+                                    <a href="#" class="hover:underline" {{ html_attr(hover_card_trigger_attrs) }}>{{ stats.author.name }}</a>
+                                </twig:HoverCard:Trigger>
+                                <twig:HoverCard:Content class="flex w-64 flex-col gap-1">
+                                    <span class="font-semibold">@{{ stats.author.username }}</span>
+                                    <span class="text-muted-foreground">{{ stats.author.email }}</span>
+                                    <span class="mt-1 text-xs">{{ stats.published }} published out of {{ stats.posts }} posts</span>
+                                </twig:HoverCard:Content>
+                            </twig:HoverCard>
+                        </twig:Item:Title>
+                        <twig:Item:Description>{{ stats.posts }} posts · {{ stats.views|number_format }} views</twig:Item:Description>
+                    </twig:Item:Content>
+                    <twig:Item:Actions>
+                        <twig:Badge variant="{{ rank == 0 ? 'default' : 'secondary' }}">#{{ rank + 1 }}</twig:Badge>
+                    </twig:Item:Actions>
+                </twig:Item>
+            {% endfor %}
+        </twig:Item:Group>
+    </twig:Card:Content>
+</twig:Card>

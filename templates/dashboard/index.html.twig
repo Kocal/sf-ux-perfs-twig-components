@@ -1,0 +1,137 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard · Acme Blog{% endblock %}
+
+{% block body %}
+    <twig:App:Layout
+        :status_counts="status_counts"
+        :category_counts="category_counts"
+        :total_posts="total_posts"
+        :current_category="filters.category"
+        :current_status="filters.status"
+    >
+        <div class="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                    <h1 class="text-2xl font-semibold tracking-tight">Dashboard</h1>
+                    <p class="text-sm text-muted-foreground">Everything happening on the Acme blog, at a glance.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <twig:ButtonGroup>
+                        <twig:Button variant="outline">
+                            <twig:ux:icon name="lucide:upload" data-icon="inline-start" />
+                            Import
+                        </twig:Button>
+                        <twig:Button variant="outline">
+                            <twig:ux:icon name="lucide:download" data-icon="inline-start" />
+                            Export
+                        </twig:Button>
+                    </twig:ButtonGroup>
+                    <twig:DropdownMenu id="export-format" align="end">
+                        <twig:DropdownMenu:Trigger>
+                            <twig:Button {{ ...dropdown_menu_trigger_attrs }} variant="outline" size="icon" aria-label="Export format">
+                                <twig:ux:icon name="lucide:file-cog" />
+                            </twig:Button>
+                        </twig:DropdownMenu:Trigger>
+                        <twig:DropdownMenu:Content class="w-40">
+                            <twig:DropdownMenu:Label>Export format</twig:DropdownMenu:Label>
+                            <twig:DropdownMenu:Separator />
+                            <twig:DropdownMenu:RadioGroup value="csv">
+                                <twig:DropdownMenu:RadioItem value="csv" checked>CSV</twig:DropdownMenu:RadioItem>
+                                <twig:DropdownMenu:RadioItem value="json">JSON</twig:DropdownMenu:RadioItem>
+                                <twig:DropdownMenu:RadioItem value="xlsx">Excel</twig:DropdownMenu:RadioItem>
+                            </twig:DropdownMenu:RadioGroup>
+                        </twig:DropdownMenu:Content>
+                    </twig:DropdownMenu>
+                    <twig:App:NewPostDialog />
+                </div>
+            </div>
+
+            <twig:Alert>
+                <twig:ux:icon name="lucide:calendar-clock" />
+                <twig:Alert:Title>{{ status_counts.scheduled }} posts are scheduled for the next 60 days</twig:Alert:Title>
+                <twig:Alert:Description>
+                    <p>
+                        Review them before they go live. Press
+                        <twig:KbdGroup>
+                            <twig:Kbd>Ctrl</twig:Kbd>
+                            <span>+</span>
+                            <twig:Kbd>B</twig:Kbd>
+                        </twig:KbdGroup>
+                        to toggle the sidebar.
+                    </p>
+                </twig:Alert:Description>
+            </twig:Alert>
+
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <twig:App:StatCard
+                    title="Total posts"
+                    value="{{ total_posts|number_format }}"
+                    icon="lucide:file-text"
+                    :trend="12.5"
+                    description="{{ status_counts.draft }} drafts waiting for review"
+                />
+                <twig:App:StatCard
+                    title="Total views"
+                    value="{{ (total_views / 1000000)|number_format(2) }}M"
+                    icon="lucide:eye"
+                    :trend="8.2"
+                    description="{{ (total_views / total_posts)|round|number_format }} views per post on average"
+                />
+                <twig:App:StatCard
+                    title="Comments"
+                    value="{{ total_comments|number_format }}"
+                    icon="lucide:message-square"
+                    :trend="-3.4"
+                    description="Fewer comments than last month"
+                />
+                <twig:App:StatCard
+                    title="Published"
+                    value="{{ (status_counts.published / total_posts * 100)|round }}%"
+                    icon="lucide:circle-check"
+                    :progress="(status_counts.published / total_posts * 100)|round"
+                    description="{{ status_counts.published }} of {{ total_posts }} posts are live"
+                />
+            </div>
+
+            <twig:Tabs defaultValue="posts" class="gap-4">
+                <twig:Tabs:List>
+                    <twig:Tabs:Trigger value="posts">
+                        <twig:ux:icon name="lucide:file-text" />
+                        Posts
+                        <twig:Badge variant="secondary" class="h-4 px-1.5 tabular-nums">{{ page.total }}</twig:Badge>
+                    </twig:Tabs:Trigger>
+                    <twig:Tabs:Trigger value="authors">
+                        <twig:ux:icon name="lucide:users" />
+                        Authors
+                    </twig:Tabs:Trigger>
+                    <twig:Tabs:Trigger value="activity">
+                        <twig:ux:icon name="lucide:activity" />
+                        Activity
+                    </twig:Tabs:Trigger>
+                </twig:Tabs:List>
+                <twig:Tabs:Content value="posts">
+                    <twig:App:PostsTable
+                        :page="page"
+                        :filters="filters"
+                        :status_counts="status_counts"
+                        :category_counts="category_counts"
+                        :per_page_choices="per_page_choices"
+                    />
+                </twig:Tabs:Content>
+                <twig:Tabs:Content value="authors">
+                    <twig:App:AuthorsTable :author_stats="author_stats" :total_views="total_views" />
+                </twig:Tabs:Content>
+                <twig:Tabs:Content value="activity">
+                    <twig:App:RecentActivity :posts="recent_posts" />
+                </twig:Tabs:Content>
+            </twig:Tabs>
+
+            <div class="grid gap-4 lg:grid-cols-3">
+                <twig:App:CategoryBreakdown :category_counts="category_counts" :total_posts="total_posts" />
+                <twig:App:TopAuthors :author_stats="author_stats" />
+                <twig:App:PublishingSettings />
+            </div>
+        </div>
+    </twig:App:Layout>
+{% endblock %}

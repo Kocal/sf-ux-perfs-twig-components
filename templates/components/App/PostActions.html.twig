@@ -1,0 +1,53 @@
+{%- props
+    post
+-%}
+<div class="flex items-center justify-end gap-1">
+    <twig:Tooltip id="post-{{ post.id }}-preview">
+        <twig:Tooltip:Trigger>
+            <twig:Button {{ ...tooltip_trigger_attrs }} as="a" href="#" variant="ghost" size="icon-sm" aria-label="Preview post #{{ post.id }}">
+                <twig:ux:icon name="lucide:eye" />
+            </twig:Button>
+        </twig:Tooltip:Trigger>
+        <twig:Tooltip:Content side="left">Preview</twig:Tooltip:Content>
+    </twig:Tooltip>
+    <twig:DropdownMenu id="post-{{ post.id }}-actions" align="end">
+        <twig:DropdownMenu:Trigger>
+            <twig:Button {{ ...dropdown_menu_trigger_attrs }} variant="ghost" size="icon-sm" aria-label="Actions for post #{{ post.id }}">
+                <twig:ux:icon name="lucide:ellipsis-vertical" />
+            </twig:Button>
+        </twig:DropdownMenu:Trigger>
+        <twig:DropdownMenu:Content class="w-48">
+            <twig:DropdownMenu:Label>Post #{{ post.id }}</twig:DropdownMenu:Label>
+            <twig:DropdownMenu:Separator />
+            <twig:DropdownMenu:Item>
+                <twig:ux:icon name="lucide:pencil" aria-hidden="true" />
+                Edit
+                <twig:DropdownMenu:Shortcut>⌘E</twig:DropdownMenu:Shortcut>
+            </twig:DropdownMenu:Item>
+            <twig:DropdownMenu:Item>
+                <twig:ux:icon name="lucide:copy" aria-hidden="true" />
+                Duplicate
+                <twig:DropdownMenu:Shortcut>⌘D</twig:DropdownMenu:Shortcut>
+            </twig:DropdownMenu:Item>
+            <twig:DropdownMenu:Item>
+                <twig:ux:icon name="lucide:share-2" aria-hidden="true" />
+                Share
+            </twig:DropdownMenu:Item>
+            <twig:DropdownMenu:Item>
+                {% if post.status.value == 'published' %}
+                    <twig:ux:icon name="lucide:eye-off" aria-hidden="true" />
+                    Unpublish
+                {% else %}
+                    <twig:ux:icon name="lucide:send" aria-hidden="true" />
+                    Publish now
+                {% endif %}
+            </twig:DropdownMenu:Item>
+            <twig:DropdownMenu:Separator />
+            <twig:DropdownMenu:Item class="text-destructive hover:text-destructive focus:text-destructive">
+                <twig:ux:icon name="lucide:trash-2" aria-hidden="true" />
+                Delete
+                <twig:DropdownMenu:Shortcut>⌘⌫</twig:DropdownMenu:Shortcut>
+            </twig:DropdownMenu:Item>
+        </twig:DropdownMenu:Content>
+    </twig:DropdownMenu>
+</div>

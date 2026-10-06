@@ -1,0 +1,31 @@
+{%- props
+    title,
+    value,
+    icon,
+    description = '',
+    trend = null,
+    progress = null
+-%}
+<twig:Card {{ ...attributes }}>
+    <twig:Card:Header>
+        <twig:Card:Description class="flex items-center gap-2">
+            <twig:ux:icon name="{{ icon }}" class="size-4" aria-hidden="true" />
+            {{ title }}
+        </twig:Card:Description>
+        <twig:Card:Title class="text-2xl font-semibold tabular-nums">{{ value }}</twig:Card:Title>
+        {% if trend is not null %}
+            <twig:Card:Action>
+                <twig:Badge variant="{{ trend >= 0 ? 'outline' : 'destructive' }}">
+                    <twig:ux:icon name="{{ trend >= 0 ? 'lucide:trending-up' : 'lucide:trending-down' }}" data-icon="inline-start" aria-hidden="true" />
+                    {{ trend >= 0 ? '+' }}{{ trend|number_format(1) }}%
+                </twig:Badge>
+            </twig:Card:Action>
+        {% endif %}
+    </twig:Card:Header>
+    <twig:Card:Content class="flex flex-col gap-2">
+        {% if progress is not null %}
+            <twig:Progress :value="progress" class="h-1.5" aria-label="{{ title }}" />
+        {% endif %}
+        <p class="text-xs text-muted-foreground">{{ description }}</p>
+    </twig:Card:Content>
+</twig:Card>

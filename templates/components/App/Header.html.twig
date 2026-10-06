@@ -1,0 +1,92 @@
+<header class="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
+    <twig:Sidebar:Trigger class="-ms-1">
+        <twig:ux:icon name="lucide:panel-left" aria-hidden="true" />
+    </twig:Sidebar:Trigger>
+    <twig:Separator orientation="vertical" class="me-2 data-[orientation=vertical]:h-4" />
+    <twig:Breadcrumb class="hidden md:block">
+        <twig:Breadcrumb:List>
+            <twig:Breadcrumb:Item>
+                <twig:Breadcrumb:Link href="{{ path('app_dashboard') }}">Acme Blog</twig:Breadcrumb:Link>
+            </twig:Breadcrumb:Item>
+            <twig:Breadcrumb:Separator />
+            <twig:Breadcrumb:Item>
+                <twig:Breadcrumb:Ellipsis />
+            </twig:Breadcrumb:Item>
+            <twig:Breadcrumb:Separator />
+            <twig:Breadcrumb:Item>
+                <twig:Breadcrumb:Link href="{{ path('app_dashboard') }}">Content</twig:Breadcrumb:Link>
+            </twig:Breadcrumb:Item>
+            <twig:Breadcrumb:Separator />
+            <twig:Breadcrumb:Item>
+                <twig:Breadcrumb:Page>Dashboard</twig:Breadcrumb:Page>
+            </twig:Breadcrumb:Item>
+        </twig:Breadcrumb:List>
+    </twig:Breadcrumb>
+
+    <div class="ms-auto flex items-center gap-2">
+        <twig:InputGroup class="hidden w-64 lg:flex">
+            <twig:InputGroup:Input type="search" id="header-search" name="search" placeholder="Search anything..." aria-label="Search anything" />
+            <twig:InputGroup:Addon>
+                <twig:ux:icon name="lucide:search" />
+            </twig:InputGroup:Addon>
+            <twig:InputGroup:Addon align="inline-end">
+                <twig:KbdGroup>
+                    <twig:Kbd>⌘</twig:Kbd>
+                    <twig:Kbd>K</twig:Kbd>
+                </twig:KbdGroup>
+            </twig:InputGroup:Addon>
+        </twig:InputGroup>
+
+        {% for action in [
+            {id: 'header-notifications', label: 'Notifications', icon: 'lucide:bell'},
+            {id: 'header-help', label: 'Help center', icon: 'lucide:circle-help'},
+            {id: 'header-settings', label: 'Settings', icon: 'lucide:settings'},
+        ] %}
+            <twig:Tooltip id="{{ action.id }}">
+                <twig:Tooltip:Trigger>
+                    <twig:Button {{ ...tooltip_trigger_attrs }} variant="ghost" size="icon" aria-label="{{ action.label }}">
+                        <twig:ux:icon name="{{ action.icon }}" />
+                    </twig:Button>
+                </twig:Tooltip:Trigger>
+                <twig:Tooltip:Content side="bottom">{{ action.label }}</twig:Tooltip:Content>
+            </twig:Tooltip>
+        {% endfor %}
+
+        <twig:Separator orientation="vertical" class="mx-1 data-[orientation=vertical]:h-4" />
+
+        <twig:DropdownMenu id="header-account" align="end">
+            <twig:DropdownMenu:Trigger>
+                <twig:Button {{ ...dropdown_menu_trigger_attrs }} variant="ghost" size="icon" class="rounded-full" aria-label="Account">
+                    <twig:Avatar>
+                        <twig:Avatar:Fallback>LG</twig:Avatar:Fallback>
+                        <twig:Avatar:Badge class="bg-green-600" />
+                    </twig:Avatar>
+                </twig:Button>
+            </twig:DropdownMenu:Trigger>
+            <twig:DropdownMenu:Content class="w-56">
+                <twig:DropdownMenu:Label>
+                    <span class="block">Leanne Graham</span>
+                    <span class="block text-xs font-normal text-muted-foreground">sincere@april.biz</span>
+                </twig:DropdownMenu:Label>
+                <twig:DropdownMenu:Separator />
+                <twig:DropdownMenu:Item>
+                    <twig:ux:icon name="lucide:user" aria-hidden="true" />
+                    Profile
+                    <twig:DropdownMenu:Shortcut>⇧⌘P</twig:DropdownMenu:Shortcut>
+                </twig:DropdownMenu:Item>
+                <twig:DropdownMenu:Item>
+                    <twig:ux:icon name="lucide:settings" aria-hidden="true" />
+                    Settings
+                    <twig:DropdownMenu:Shortcut>⌘S</twig:DropdownMenu:Shortcut>
+                </twig:DropdownMenu:Item>
+                <twig:DropdownMenu:CheckboxItem checked>Show drafts</twig:DropdownMenu:CheckboxItem>
+                <twig:DropdownMenu:CheckboxItem>Compact mode</twig:DropdownMenu:CheckboxItem>
+                <twig:DropdownMenu:Separator />
+                <twig:DropdownMenu:Item>
+                    <twig:ux:icon name="lucide:log-out" aria-hidden="true" />
+                    Log out
+                </twig:DropdownMenu:Item>
+            </twig:DropdownMenu:Content>
+        </twig:DropdownMenu>
+    </div>
+</header>

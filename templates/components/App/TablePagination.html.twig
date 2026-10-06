@@ -1,0 +1,31 @@
+{%- props
+    page
+-%}
+{%- set query = app.request.query.all -%}
+<twig:Pagination class="mx-0 w-auto justify-end">
+    <twig:Pagination:Content>
+        <twig:Pagination:Item>
+            <twig:Pagination:Previous
+                href="{{ path('app_dashboard', query|merge({page: max(1, page.page - 1)})) }}"
+                aria-disabled="{{ page.page == 1 ? 'true' : 'false' }}"
+                class="{{ page.page == 1 ? 'pointer-events-none opacity-50' }}"
+            />
+        </twig:Pagination:Item>
+        {% for number in page.window %}
+            <twig:Pagination:Item>
+                {% if number is null %}
+                    <twig:Pagination:Ellipsis />
+                {% else %}
+                    <twig:Pagination:Link href="{{ path('app_dashboard', query|merge({page: number})) }}" :active="number == page.page">{{ number }}</twig:Pagination:Link>
+                {% endif %}
+            </twig:Pagination:Item>
+        {% endfor %}
+        <twig:Pagination:Item>
+            <twig:Pagination:Next
+                href="{{ path('app_dashboard', query|merge({page: min(page.pageCount, page.page + 1)})) }}"
+                aria-disabled="{{ page.page == page.pageCount ? 'true' : 'false' }}"
+                class="{{ page.page == page.pageCount ? 'pointer-events-none opacity-50' }}"
+            />
+        </twig:Pagination:Item>
+    </twig:Pagination:Content>
+</twig:Pagination>

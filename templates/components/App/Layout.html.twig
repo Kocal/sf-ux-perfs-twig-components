@@ -1,0 +1,21 @@
+{%- props
+    status_counts,
+    category_counts,
+    total_posts,
+    current_category = null,
+    current_status = null
+-%}
+{% set page_content %}{% block content %}{% endblock %}{% endset %}
+<twig:Sidebar:Provider id="app-sidebar">
+    <twig:App:Sidebar
+        :status_counts="status_counts"
+        :category_counts="category_counts"
+        :total_posts="total_posts"
+        :current_category="current_category"
+        :current_status="current_status"
+    />
+    <twig:Sidebar:Inset>
+        <twig:App:Header />
+        {{ page_content|raw }}
+    </twig:Sidebar:Inset>
+</twig:Sidebar:Provider>
