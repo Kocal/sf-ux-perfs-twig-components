@@ -1,10 +1,14 @@
 # sf-ux-perfs-twig-components
 
-A Symfony 8.1 app whose homepage is an admin dashboard built entirely from Symfony UX Toolkit's Shadcn kit components (HTML syntax): sidebar, tables, dropdown menus, dialogs, form fields, icons. It exists to profile and speed up Symfony UX TwigComponent, and the Twig/UX Icons code it relies on. The default page (25 rows) renders about 1,800 components and 400 icons per request; `?perPage=` (10 to 500) scales the posts table. Data is 500 fake posts generated in memory from a fixed seed, so every request renders the same HTML: no database.
+A Symfony 8.1 app whose homepage is an admin dashboard built entirely from Symfony UX Toolkit's Shadcn kit components (HTML syntax): sidebar, tables, dropdown menus, dialogs, form fields, icons. It exists to profile Symfony UX TwigComponent and LiveComponent, and the Twig/UX Icons code they rely on.
+
+The default page (25 rows) renders about 1,800 components and 400 icons per request; `?perPage=` (10 to 500) scales the posts table. The posts table (filters, row selection, bulk actions), the star on each row, the new post form (validated field by field) and the stat cards are live components.
+
+Posts, authors and users are Doctrine entities in SQLite, loaded by fixtures from a fixed seed, so every request renders the same HTML. The dashboard requires a login.
 
 ## Results
 
-The performance pull requests measured together so far on the default page (25 rows) against Symfony UX 3.x and Twig 3.30.0:
+The performance pull requests measured together so far on the default page (25 rows), before the live components were added, against Symfony UX 3.x and Twig 3.30.0:
 
 - Symfony UX: [#4046](https://github.com/symfony/ux/pull/4046), [#4047](https://github.com/symfony/ux/pull/4047), [#4048](https://github.com/symfony/ux/pull/4048), [#4049](https://github.com/symfony/ux/pull/4049), [#4050](https://github.com/symfony/ux/pull/4050)
 - Twig: [#4982](https://github.com/twigphp/Twig/pull/4982), [#4983](https://github.com/twigphp/Twig/pull/4983), [#4984](https://github.com/twigphp/Twig/pull/4984)
@@ -22,14 +26,20 @@ CPU times are the median of 6 interleaved runs of 60 requests per side, in the p
 
 ## Run it
 
+Assets are built with Symfony Reprise, Vite, Tailwind CSS v4 and pnpm.
+
 ```
 composer install
 pnpm install
 pnpm build # or pnpm dev for the Vite dev server
+php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console doctrine:fixtures:load --no-interaction --env=dev
 symfony serve -d
 ```
 
-Assets are built with Symfony Reprise, Vite, Tailwind CSS v4, and pnpm. Open the site at the URL `symfony serve` prints.
+Open the site at the URL `symfony serve` prints and log in as `editor` / `editor` (editor, edits every post) or `Bret` / `bret` (author, edits only their own posts).
+
+`DATABASE_URL` must point to SQLite, e.g. `sqlite:///%kernel.project_dir%/var/data.db`. The prod environment needs an `APP_SECRET`, because LiveComponent signs its props with it.
 
 ## Testing local Symfony UX changes
 
