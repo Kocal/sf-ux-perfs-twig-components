@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use App\Entity\Author;
+
 final readonly class AuthorStats
 {
     public function __construct(

@@ -1,0 +1,53 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        # demo users only: their passwords are written in clear below
+        Symfony\Component\Security\Core\User\InMemoryUser: plaintext
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        users_in_memory:
+            memory:
+                users:
+                    # an editor manages every post
+                    editor: { password: editor, roles: [ROLE_EDITOR] }
+                    # an author only edits their own posts, matched on the Author username
+                    Bret: { password: bret, roles: [ROLE_AUTHOR] }
+
+    role_hierarchy:
+        ROLE_EDITOR: [ROLE_AUTHOR]
+        ROLE_AUTHOR: [ROLE_USER]
+
+    firewalls:
+        dev:
+            # Ensure dev tools and static assets are always allowed
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+        main:
+            lazy: true
+            provider: users_in_memory
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: app_dashboard
+            logout:
+                path: app_logout
+                target: app_login
+
+    # Note: Only the *first* matching rule is applied
+    access_control:
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        # the dashboard, and the live components it renders (/_components/...)
+        - { path: ^/, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            # Password hashers are resource-intensive by design to ensure security.
+            # In tests, it's safe to reduce their cost to improve performance.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

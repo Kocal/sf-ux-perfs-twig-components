@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use App\Entity\Post;
+
 final readonly class PostPage
 {
     /**

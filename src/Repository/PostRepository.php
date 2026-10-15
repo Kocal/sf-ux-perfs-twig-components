@@ -2,98 +2,56 @@
 
 namespace App\Repository;
 
-use App\Model\Author;
+use App\Entity\Author;
+use App\Entity\Post;
 use App\Model\AuthorStats;
-use App\Model\Post;
 use App\Model\PostCategory;
 use App\Model\PostPage;
 use App\Model\PostSort;
 use App\Model\PostStatus;
-use Random\Engine\Xoshiro256StarStar;
-use Random\Randomizer;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * In-memory list of fake posts, generated from a fixed seed so every request renders the same data.
+ * @extends ServiceEntityRepository<Post>
  */
-final class PostRepository
+final class PostRepository extends ServiceEntityRepository
 {
-    private const AUTHORS = [
-        ['Leanne Graham', 'Bret', 'Sincere@april.biz'],
-        ['Ervin Howell', 'Antonette', 'Shanna@melissa.tv'],
-        ['Clementine Bauch', 'Samantha', 'Nathan@yesenia.net'],
-        ['Patricia Lebsack', 'Karianne', 'Julianne.OConner@kory.org'],
-        ['Chelsey Dietrich', 'Kamren', 'Lucio_Hettinger@annie.ca'],
-        ['Mrs. Dennis Schulist', 'Leopoldo_Corkery', 'Karley_Dach@jasper.info'],
-        ['Kurtis Weissnat', 'Elwyn.Skiles', 'Telly.Hoeger@billy.biz'],
-        ['Nicholas Runolfsdottir V', 'Maxime_Nienow', 'Sherwood@rosamond.me'],
-        ['Glenna Reichert', 'Delphine', 'Chaim_McDermott@dana.io'],
-        ['Clementina DuBuque', 'Moriah.Stanton', 'Rey.Padberg@karina.biz'],
-    ];
-
-    private const TITLE_PATTERNS = [
-        'Getting started with %s',
-        '%s in production: lessons learned',
-        'Why we migrated to %s',
-        'A deep dive into %s',
-        '10 tips for a better %s setup',
-        'Debugging %s like a pro',
-        'What is new in %s this month',
-        'Building an admin dashboard with %s',
-        'Testing %s the right way',
-        'How %s cut our response time in half',
-    ];
-
-    private const SUBJECTS = [
-        'Symfony UX', 'Twig Components', 'Live Components', 'Stimulus', 'Turbo', 'Vite', 'Tailwind CSS',
-        'Doctrine', 'Messenger', 'API Platform', 'FrankenPHP', 'PHPUnit', 'PHPStan', 'Rector', 'Symfony Reprise',
-    ];
-
-    private const TAGS = ['php', 'twig', 'javascript', 'css', 'symfony', 'devops', 'testing', 'ux', 'api', 'tooling'];
-
-    private const WORDS = [
-        'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'sed', 'do', 'eiusmod',
-        'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna', 'aliqua', 'enim', 'ad', 'minim', 'veniam',
-        'quis', 'nostrud', 'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo', 'consequat',
-    ];
-
-    /** @var list<Post>|null */
-    private ?array $posts = null;
-
-    public function __construct(
-        private readonly int $count = 500,
-        private readonly int $seed = 42,
-    ) {
-    }
-
-    /**
-     * @return list<Post>
-     */
-    public function findAll(): array
+    public function __construct(ManagerRegistry $registry)
     {
-        return $this->posts ??= $this->generate();
+        parent::__construct($registry, Post::class);
     }
 
     public function paginate(string $query = '', ?PostStatus $status = null, ?PostCategory $category = null, PostSort $sort = PostSort::Newest, bool $featuredOnly = false, int $page = 1, int $perPage = 25): PostPage
     {
-        $posts = array_values(array_filter(
-            $this->findAll(),
-            static fn (Post $post): bool => ('' === $query || false !== stripos($post->title, $query) || false !== stripos($post->author->name, $query))
-                && (null === $status || $post->status === $status)
-                && (null === $category || $post->category === $category)
-                && (!$featuredOnly || $post->featured),
-        ));
+        $qb = $this->createQueryBuilder('p')
+            ->innerJoin('p.author', 'a');
 
-        usort($posts, match ($sort) {
-            PostSort::Newest => static fn (Post $a, Post $b): int => $b->publishedAt <=> $a->publishedAt,
-            PostSort::Oldest => static fn (Post $a, Post $b): int => $a->publishedAt <=> $b->publishedAt,
-            PostSort::MostViewed => static fn (Post $a, Post $b): int => $b->views <=> $a->views,
-            PostSort::MostCommented => static fn (Post $a, Post $b): int => $b->comments <=> $a->comments,
-            PostSort::Title => static fn (Post $a, Post $b): int => strcasecmp($a->title, $b->title),
-        });
+        if ('' !== $query) {
+            $qb->andWhere('LOWER(p.title) LIKE :query OR LOWER(a.name) LIKE :query')
+                ->setParameter('query', '%'.mb_strtolower($query).'%');
+        }
+        if (null !== $status) {
+            $qb->andWhere('p.status = :status')->setParameter('status', $status);
+        }
+        if (null !== $category) {
+            $qb->andWhere('p.category = :category')->setParameter('category', $category);
+        }
+        if ($featuredOnly) {
+            $qb->andWhere('p.featured = true');
+        }
 
-        $page = max(1, min($page, max(1, (int) ceil(\count($posts) / $perPage))));
+        $total = (int) (clone $qb)->select('COUNT(p.id)')->getQuery()->getSingleScalarResult();
+        $page = max(1, min($page, max(1, (int) ceil($total / $perPage))));
 
-        return new PostPage(\array_slice($posts, ($page - 1) * $perPage, $perPage), \count($posts), $page, $perPage);
+        $items = $this->sorted($qb->addSelect('a'), $sort)
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult();
+
+        return new PostPage($items, $total, $page, $perPage);
     }
 
     /**
@@ -109,12 +67,7 @@ final class PostRepository
      */
     public function countByStatus(): array
     {
-        $counts = array_fill_keys(array_column(PostStatus::cases(), 'value'), 0);
-        foreach ($this->findAll() as $post) {
-            ++$counts[$post->status->value];
-        }
-
-        return $counts;
+        return $this->countBy('status', array_column(PostStatus::cases(), 'value'));
     }
 
     /**
@@ -122,22 +75,17 @@ final class PostRepository
      */
     public function countByCategory(): array
     {
-        $counts = array_fill_keys(array_column(PostCategory::cases(), 'value'), 0);
-        foreach ($this->findAll() as $post) {
-            ++$counts[$post->category->value];
-        }
-
-        return $counts;
+        return $this->countBy('category', array_column(PostCategory::cases(), 'value'));
     }
 
     public function sumViews(): int
     {
-        return array_sum(array_map(static fn (Post $post): int => $post->views, $this->findAll()));
+        return (int) $this->createQueryBuilder('p')->select('SUM(p.views)')->getQuery()->getSingleScalarResult();
     }
 
     public function sumComments(): int
     {
-        return array_sum(array_map(static fn (Post $post): int => $post->comments, $this->findAll()));
+        return (int) $this->createQueryBuilder('p')->select('SUM(p.comments)')->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -145,63 +93,79 @@ final class PostRepository
      */
     public function findAuthorStats(): array
     {
-        $stats = [];
-        foreach ($this->findAll() as $post) {
-            $current = $stats[$post->author->id] ?? new AuthorStats($post->author, 0, 0, 0);
-            $stats[$post->author->id] = new AuthorStats(
-                $post->author,
-                $current->posts + 1,
-                $current->published + (PostStatus::Published === $post->status ? 1 : 0),
-                $current->views + $post->views,
-            );
-        }
+        $rows = $this->getEntityManager()->createQueryBuilder()
+            ->select('a AS author', 'COUNT(p.id) AS posts', 'SUM(CASE WHEN p.status = :published THEN 1 ELSE 0 END) AS published', 'SUM(p.views) AS views')
+            ->from(Author::class, 'a')
+            ->innerJoin('a.posts', 'p')
+            ->groupBy('a.id')
+            ->orderBy('views', 'DESC')
+            ->addOrderBy('a.id', 'ASC')
+            ->setParameter('published', PostStatus::Published)
+            ->getQuery()
+            ->getResult();
 
-        usort($stats, static fn (AuthorStats $a, AuthorStats $b): int => $b->views <=> $a->views);
-
-        return $stats;
+        return array_map(static fn (array $row): AuthorStats => new AuthorStats($row['author'], (int) $row['posts'], (int) $row['published'], (int) $row['views']), $rows);
     }
 
     /**
-     * @return list<Post>
+     * @param list<int> $ids
      */
-    private function generate(): array
+    public function deleteByIds(array $ids): int
     {
-        $random = new Randomizer(new Xoshiro256StarStar($this->seed));
-        $now = new \DateTimeImmutable('2026-10-01 09:00:00');
+        return $this->createQueryBuilder('p')
+            ->delete()
+            ->where('p.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->execute();
+    }
 
-        $authors = [];
-        foreach (self::AUTHORS as $i => [$name, $username, $email]) {
-            $authors[] = new Author($i + 1, $name, $username, strtolower($email), 0 === $i % 3);
+    /**
+     * @param list<int> $ids
+     */
+    public function updateStatusByIds(array $ids, PostStatus $status): int
+    {
+        return $this->createQueryBuilder('p')
+            ->update()
+            ->set('p.status', ':status')
+            ->where('p.id IN (:ids)')
+            ->setParameter('status', $status)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->execute();
+    }
+
+    private function sorted(QueryBuilder $qb, PostSort $sort): QueryBuilder
+    {
+        match ($sort) {
+            PostSort::Newest => $qb->orderBy('p.publishedAt', 'DESC'),
+            PostSort::Oldest => $qb->orderBy('p.publishedAt', 'ASC'),
+            PostSort::MostViewed => $qb->orderBy('p.views', 'DESC'),
+            PostSort::MostCommented => $qb->orderBy('p.comments', 'DESC'),
+            PostSort::Title => $qb->addSelect('LOWER(p.title) AS HIDDEN lowerTitle')->orderBy('lowerTitle', 'ASC'),
+        };
+
+        return $qb->addOrderBy('p.id', 'ASC');
+    }
+
+    /**
+     * @param list<string> $keys
+     *
+     * @return array<string, int>
+     */
+    private function countBy(string $field, array $keys): array
+    {
+        $counts = array_fill_keys($keys, 0);
+        $rows = $this->createQueryBuilder('p')
+            ->select("p.$field AS field", 'COUNT(p.id) AS total')
+            ->groupBy("p.$field")
+            ->getQuery()
+            ->getResult();
+
+        foreach ($rows as $row) {
+            $counts[$row['field'] instanceof \BackedEnum ? $row['field']->value : $row['field']] = (int) $row['total'];
         }
 
-        $posts = [];
-        for ($id = 1; $id <= $this->count; ++$id) {
-            $status = match (true) {
-                ($roll = $random->getInt(1, 100)) <= 60 => PostStatus::Published,
-                $roll <= 80 => PostStatus::Draft,
-                $roll <= 90 => PostStatus::Scheduled,
-                default => PostStatus::Archived,
-            };
-            $views = \in_array($status, [PostStatus::Draft, PostStatus::Scheduled], true) ? 0 : $random->getInt(40, 48000);
-            $words = array_map(static fn (int $key): string => self::WORDS[$key], $random->pickArrayKeys(self::WORDS, $random->getInt(14, 24)));
-            $offset = PostStatus::Scheduled === $status ? $random->getInt(1, 60) : -$random->getInt(0, 720);
-
-            $posts[] = new Post(
-                id: $id,
-                title: \sprintf(self::TITLE_PATTERNS[$random->getInt(0, \count(self::TITLE_PATTERNS) - 1)], self::SUBJECTS[$random->getInt(0, \count(self::SUBJECTS) - 1)]),
-                excerpt: ucfirst(implode(' ', $random->shuffleArray($words))).'.',
-                author: $authors[$random->getInt(0, \count($authors) - 1)],
-                category: PostCategory::cases()[$random->getInt(0, \count(PostCategory::cases()) - 1)],
-                status: $status,
-                tags: array_map(static fn (int $key): string => self::TAGS[$key], $random->pickArrayKeys(self::TAGS, $random->getInt(1, 3))),
-                views: $views,
-                comments: 0 === $views ? 0 : $random->getInt(0, intdiv($views, 150) + 2),
-                readingTime: $random->getInt(2, 18),
-                featured: 1 === $random->getInt(1, 8),
-                publishedAt: $now->modify(\sprintf('%+d days %+d minutes', $offset, -$random->getInt(0, 1439))),
-            );
-        }
-
-        return $posts;
+        return $counts;
     }
 }

@@ -1,0 +1,33 @@
+{%- set status_counts = this.statusCounts -%}
+{%- set total_posts = this.totalPosts -%}
+{%- set total_views = this.totalViews -%}
+<div {{ attributes.defaults({class: 'grid gap-4 sm:grid-cols-2 xl:grid-cols-4'}) }}>
+    <twig:App:StatCard
+        title="Total posts"
+        value="{{ total_posts|number_format }}"
+        icon="lucide:file-text"
+        :trend="12.5"
+        description="{{ status_counts.draft }} drafts waiting for review"
+    />
+    <twig:App:StatCard
+        title="Total views"
+        value="{{ (total_views / 1000000)|number_format(2) }}M"
+        icon="lucide:eye"
+        :trend="8.2"
+        description="{{ (total_views / max(1, total_posts))|round|number_format }} views per post on average"
+    />
+    <twig:App:StatCard
+        title="Comments"
+        value="{{ this.totalComments|number_format }}"
+        icon="lucide:message-square"
+        :trend="-3.4"
+        description="Fewer comments than last month"
+    />
+    <twig:App:StatCard
+        title="Published"
+        value="{{ (status_counts.published / max(1, total_posts) * 100)|round }}%"
+        icon="lucide:circle-check"
+        :progress="(status_counts.published / max(1, total_posts) * 100)|round"
+        description="{{ status_counts.published }} of {{ total_posts }} posts are live"
+    />
+</div>

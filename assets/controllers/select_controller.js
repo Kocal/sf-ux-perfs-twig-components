@@ -172,6 +172,11 @@ export default class extends Controller {
 
     _select(item) {
         this.valueValue = item.dataset.value;
+        if (this.hasHiddenSelectTarget) {
+            // lets form listeners, like a LiveComponent data-model, see the new value
+            this.hiddenSelectTarget.options[0].value = this.valueValue;
+            this.hiddenSelectTarget.dispatchEvent(new Event('change', { bubbles: true }));
+        }
         this.dispatch('change', {
             detail: { value: this.valueValue, label: this._labelOf(item) },
             bubbles: true,

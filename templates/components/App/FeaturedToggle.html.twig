@@ -1,0 +1,27 @@
+{%- set can_edit = is_granted('POST_EDIT', post) -%}
+<div {{ attributes.defaults({class: 'inline-flex'}) }}>
+    <twig:Tooltip id="post-{{ post.id }}-featured">
+        <twig:Tooltip:Trigger>
+            <twig:Button
+                {{ ...tooltip_trigger_attrs }}
+                variant="ghost"
+                size="icon-xs"
+                aria-pressed="{{ post.featured ? 'true' : 'false' }}"
+                aria-label="{{ post.featured ? 'Unfeature' : 'Feature' }} post #{{ post.id }}"
+                :disabled="not can_edit"
+                :data-action="can_edit ? 'live#action' : false"
+                data-live-action-param="toggle"
+                data-loading="addAttribute(disabled)"
+            >
+                <twig:ux:icon name="lucide:star" class="{{ post.featured ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground' }}" />
+            </twig:Button>
+        </twig:Tooltip:Trigger>
+        <twig:Tooltip:Content side="top">
+            {%- if not can_edit -%}
+                Only {{ post.author.name }} or an editor can change this
+            {%- else -%}
+                {{ post.featured ? 'Remove from the homepage' : 'Feature on the homepage' }}
+            {%- endif -%}
+        </twig:Tooltip:Content>
+    </twig:Tooltip>
+</div>

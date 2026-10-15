@@ -65,8 +65,8 @@
             </twig:DropdownMenu:Trigger>
             <twig:DropdownMenu:Content class="w-56">
                 <twig:DropdownMenu:Label>
-                    <span class="block">Leanne Graham</span>
-                    <span class="block text-xs font-normal text-muted-foreground">sincere@april.biz</span>
+                    <span class="block">{{ app.user.userIdentifier }}</span>
+                    <span class="block text-xs font-normal text-muted-foreground">{{ is_granted('ROLE_EDITOR') ? 'Editor' : 'Author' }}</span>
                 </twig:DropdownMenu:Label>
                 <twig:DropdownMenu:Separator />
                 <twig:DropdownMenu:Item>
