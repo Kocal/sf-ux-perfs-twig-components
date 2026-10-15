@@ -7,8 +7,8 @@
         :status_counts="status_counts"
         :category_counts="category_counts"
         :total_posts="total_posts"
-        :current_category="filters.category"
-        :current_status="filters.status"
+        :current_category="enum('App\\Model\\PostCategory').tryFrom(app.request.query.get('category', ''))"
+        :current_status="enum('App\\Model\\PostStatus').tryFrom(app.request.query.get('status', ''))"
     >
         <div class="flex flex-1 flex-col gap-6 p-4 lg:p-6">
             <div class="flex flex-wrap items-end justify-between gap-4">
@@ -63,43 +63,14 @@
                 </twig:Alert:Description>
             </twig:Alert>
 
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <twig:App:StatCard
-                    title="Total posts"
-                    value="{{ total_posts|number_format }}"
-                    icon="lucide:file-text"
-                    :trend="12.5"
-                    description="{{ status_counts.draft }} drafts waiting for review"
-                />
-                <twig:App:StatCard
-                    title="Total views"
-                    value="{{ (total_views / 1000000)|number_format(2) }}M"
-                    icon="lucide:eye"
-                    :trend="8.2"
-                    description="{{ (total_views / total_posts)|round|number_format }} views per post on average"
-                />
-                <twig:App:StatCard
-                    title="Comments"
-                    value="{{ total_comments|number_format }}"
-                    icon="lucide:message-square"
-                    :trend="-3.4"
-                    description="Fewer comments than last month"
-                />
-                <twig:App:StatCard
-                    title="Published"
-                    value="{{ (status_counts.published / total_posts * 100)|round }}%"
-                    icon="lucide:circle-check"
-                    :progress="(status_counts.published / total_posts * 100)|round"
-                    description="{{ status_counts.published }} of {{ total_posts }} posts are live"
-                />
-            </div>
+            <twig:App:DashboardStats />
 
             <twig:Tabs defaultValue="posts" class="gap-4">
                 <twig:Tabs:List>
                     <twig:Tabs:Trigger value="posts">
                         <twig:ux:icon name="lucide:file-text" />
                         Posts
-                        <twig:Badge variant="secondary" class="h-4 px-1.5 tabular-nums">{{ page.total }}</twig:Badge>
+                        <twig:Badge variant="secondary" class="h-4 px-1.5 tabular-nums">{{ total_posts }}</twig:Badge>
                     </twig:Tabs:Trigger>
                     <twig:Tabs:Trigger value="authors">
                         <twig:ux:icon name="lucide:users" />
@@ -111,13 +82,7 @@
                     </twig:Tabs:Trigger>
                 </twig:Tabs:List>
                 <twig:Tabs:Content value="posts">
-                    <twig:App:PostsTable
-                        :page="page"
-                        :filters="filters"
-                        :status_counts="status_counts"
-                        :category_counts="category_counts"
-                        :per_page_choices="per_page_choices"
-                    />
+                    <twig:App:PostsTable />
                 </twig:Tabs:Content>
                 <twig:Tabs:Content value="authors">
                     <twig:App:AuthorsTable :author_stats="author_stats" :total_views="total_views" />

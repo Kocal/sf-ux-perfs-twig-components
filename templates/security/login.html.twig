@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Log in · Acme Blog{% endblock %}
+
+{% block body %}
+    <main class="flex min-h-svh items-center justify-center p-6">
+        <twig:Card class="w-full max-w-sm">
+            <twig:Card:Header>
+                <twig:Card:Title>Log in to Acme Blog</twig:Card:Title>
+                <twig:Card:Description>Use <code>editor</code> / <code>editor</code>, or <code>Bret</code> / <code>bret</code> for an author who only edits their own posts.</twig:Card:Description>
+            </twig:Card:Header>
+            <twig:Card:Content>
+                <form method="post" action="{{ path('app_login') }}">
+                    <twig:Field:Group>
+                        {% if error %}
+                            <twig:Alert variant="destructive">
+                                <twig:ux:icon name="lucide:circle-alert" />
+                                <twig:Alert:Title>{{ error.messageKey|trans(error.messageData, 'security') }}</twig:Alert:Title>
+                            </twig:Alert>
+                        {% endif %}
+                        <twig:Field>
+                            <twig:Field:Label for="username">Username</twig:Field:Label>
+                            <twig:Input id="username" name="_username" value="{{ last_username }}" autocomplete="username" required autofocus />
+                        </twig:Field>
+                        <twig:Field>
+                            <twig:Field:Label for="password">Password</twig:Field:Label>
+                            <twig:Input id="password" type="password" name="_password" autocomplete="current-password" required />
+                        </twig:Field>
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" data-controller="csrf-protection">
+                        <twig:Button type="submit" class="w-full">Log in</twig:Button>
+                    </twig:Field:Group>
+                </form>
+            </twig:Card:Content>
+        </twig:Card>
+    </main>
+{% endblock %}

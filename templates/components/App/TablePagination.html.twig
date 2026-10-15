@@ -9,6 +9,9 @@
                 href="{{ path('app_dashboard', query|merge({page: max(1, page.page - 1)})) }}"
                 aria-disabled="{{ page.page == 1 ? 'true' : 'false' }}"
                 class="{{ page.page == 1 ? 'pointer-events-none opacity-50' }}"
+                data-action="live#action:prevent"
+                data-live-action-param="goToPage"
+                data-live-page-param="{{ max(1, page.page - 1) }}"
             />
         </twig:Pagination:Item>
         {% for number in page.window %}
@@ -16,7 +19,13 @@
                 {% if number is null %}
                     <twig:Pagination:Ellipsis />
                 {% else %}
-                    <twig:Pagination:Link href="{{ path('app_dashboard', query|merge({page: number})) }}" :active="number == page.page">{{ number }}</twig:Pagination:Link>
+                    <twig:Pagination:Link
+                        href="{{ path('app_dashboard', query|merge({page: number})) }}"
+                        :active="number == page.page"
+                        data-action="live#action:prevent"
+                        data-live-action-param="goToPage"
+                        data-live-page-param="{{ number }}"
+                    >{{ number }}</twig:Pagination:Link>
                 {% endif %}
             </twig:Pagination:Item>
         {% endfor %}
@@ -25,6 +34,9 @@
                 href="{{ path('app_dashboard', query|merge({page: min(page.pageCount, page.page + 1)})) }}"
                 aria-disabled="{{ page.page == page.pageCount ? 'true' : 'false' }}"
                 class="{{ page.page == page.pageCount ? 'pointer-events-none opacity-50' }}"
+                data-action="live#action:prevent"
+                data-live-action-param="goToPage"
+                data-live-page-param="{{ min(page.pageCount, page.page + 1) }}"
             />
         </twig:Pagination:Item>
     </twig:Pagination:Content>

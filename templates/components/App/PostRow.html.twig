@@ -1,16 +1,15 @@
 {%- props
-    post
+    post,
+    selected = false
 -%}
-<twig:Table:Row>
+<twig:Table:Row :data-state="selected ? 'selected' : false">
     <twig:Table:Cell class="w-8 ps-4">
-        <twig:Checkbox id="select-post-{{ post.id }}" aria-label="Select post #{{ post.id }}" />
+        <twig:Checkbox id="select-post-{{ post.id }}" aria-label="Select post #{{ post.id }}" value="{{ post.id }}" :checked="selected" :attributes="{'data-model': 'selected[]'}" />
     </twig:Table:Cell>
     <twig:Table:Cell>
         <div class="flex max-w-60 flex-col gap-1 xl:max-w-xs 2xl:max-w-md">
             <div class="flex items-center gap-1.5">
-                {% if post.featured %}
-                    <twig:ux:icon name="lucide:star" class="size-3.5 shrink-0 fill-amber-400 text-amber-400" aria-label="Featured" />
-                {% endif %}
+                <twig:App:FeaturedToggle :post="post" key="{{ post.id }}" />
                 <a href="#" class="truncate font-medium hover:underline">{{ post.title }}</a>
             </div>
             <p class="truncate text-xs text-muted-foreground">{{ post.excerpt }}</p>
