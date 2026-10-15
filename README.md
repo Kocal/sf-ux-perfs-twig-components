@@ -8,6 +8,8 @@ Posts, authors and users are Doctrine entities in SQLite, loaded by fixtures fro
 
 ## Results
 
+### Twig components
+
 The performance pull requests measured together so far on the default page (25 rows), before the live components were added, against Symfony UX 3.x and Twig 3.30.0:
 
 - Symfony UX: [#4046](https://github.com/symfony/ux/pull/4046), [#4047](https://github.com/symfony/ux/pull/4047), [#4048](https://github.com/symfony/ux/pull/4048), [#4049](https://github.com/symfony/ux/pull/4049), [#4050](https://github.com/symfony/ux/pull/4050)
@@ -23,6 +25,30 @@ The performance pull requests measured together so far on the default page (25 r
 | Icon registry lookups per request | 414 | 90 | -78% |
 
 CPU times are the median of 6 interleaved runs of 60 requests per side, in the prod environment with a fresh kernel and, like PHP-FPM, empty static caches per request; the rendered HTML is identical byte for byte. Blackfire profiles: [before](https://app.blackfire.io/envs/5f4f9a62-eaa0-45ee-b7b3-a1b879f550e9/profiles/da083d28-2bd3-4bdc-aabf-27f8d40f5c71/graph), [after](https://app.blackfire.io/envs/5f4f9a62-eaa0-45ee-b7b3-a1b879f550e9/profiles/fcb4eb61-f1c4-40df-93e0-0dc832d08611/graph), [comparison](https://app.blackfire.io/envs/5f4f9a62-eaa0-45ee-b7b3-a1b879f550e9/profiles/compare/da083d28-2bd3-4bdc-aabf-27f8d40f5c71...fcb4eb61-f1c4-40df-93e0-0dc832d08611/graph).
+
+### Live components
+
+The performance pull requests measured together on the dashboard with its live components, against Symfony UX 3.x (804d42ba25a):
+
+- Symfony UX: [#4105](https://github.com/symfony/ux/pull/4105), [#4106](https://github.com/symfony/ux/pull/4106), [#4107](https://github.com/symfony/ux/pull/4107)
+
+| Scenario | Before | After | Change |
+|---|---|---|---|
+| Dashboard, 25 rows | **62.1-66.4 ms** | **55.5-62.5 ms** | -8% |
+| Dashboard, 100 rows | **156.8-161.3 ms** | **140.5-144.5 ms** | -10% |
+| Re-rendering the posts table after ticking 3 rows | **46.3-49.2 ms** | **29.4-31.6 ms** | -36% |
+| Same, with 100 rows | **169.4-181.0 ms** | **99.6-103.7 ms** | -42% |
+| Re-rendering the posts table after typing in its search box | **53.5-54.9 ms** | **35.5-36.9 ms** | -33% |
+| Deleting the 3 ticked rows | **49.4-51.1 ms** | **30.8-32.9 ms** | -37% |
+| Refreshing the stat cards after an emitted event | **2.9-3.1 ms** | **2.3-2.5 ms** | -20% |
+| Validating a field of the post form, toggling the star of a row | within the noise | | |
+
+All numbers are CPU medians per request, from 4 interleaved runs of 20 requests per side. Requests are logged in as `editor`, in the prod environment, with a fresh kernel per request and the database restored before each request.
+
+The HTML is identical byte for byte.
+
+The live requests replay what the browser sends: the props read from the page, the fingerprints of the child components, and the updated models or the action.
+
 
 ## Run it
 
