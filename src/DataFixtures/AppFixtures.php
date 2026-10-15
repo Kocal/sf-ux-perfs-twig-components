@@ -4,12 +4,14 @@ namespace App\DataFixtures;
 
 use App\Entity\Author;
 use App\Entity\Post;
+use App\Entity\User;
 use App\Model\PostCategory;
 use App\Model\PostStatus;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Random\Engine\Xoshiro256StarStar;
 use Random\Randomizer;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * 500 fake posts generated from a fixed seed, so every load produces the same data.
@@ -18,6 +20,7 @@ final class AppFixtures extends Fixture
 {
     private const COUNT = 500;
     private const SEED = 42;
+    private const AUTHORS_WITH_ACCOUNT = 3;
 
     private const AUTHORS = [
         ['Leanne Graham', 'Bret', 'Sincere@april.biz'],
@@ -56,14 +59,29 @@ final class AppFixtures extends Fixture
         'quis', 'nostrud', 'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo', 'consequat',
     ];
 
+    public function __construct(
+        private readonly UserPasswordHasherInterface $passwordHasher,
+    ) {
+    }
+
     public function load(ObjectManager $manager): void
     {
         $random = new Randomizer(new Xoshiro256StarStar(self::SEED));
         $now = new \DateTimeImmutable('2026-10-01 09:00:00');
 
+        $editor = new User('editor', ['ROLE_EDITOR']);
+        $manager->persist($editor->setPassword($this->passwordHasher->hashPassword($editor, 'editor')));
+
         $authors = [];
         foreach (self::AUTHORS as $i => [$name, $username, $email]) {
-            $manager->persist($authors[] = new Author($name, $username, strtolower($email), 0 === $i % 3));
+            $manager->persist($authors[] = $author = new Author($name, $username, strtolower($email), 0 === $i % 3));
+
+            // the first authors write from the dashboard, the others are guest authors without an account
+            if ($i < self::AUTHORS_WITH_ACCOUNT) {
+                $user = new User($username, ['ROLE_AUTHOR']);
+                $manager->persist($user->setPassword($this->passwordHasher->hashPassword($user, strtolower($username))));
+                $author->setUser($user);
+            }
         }
 
         $titles = [];

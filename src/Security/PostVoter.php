@@ -3,6 +3,7 @@
 namespace App\Security;
 
 use App\Entity\Post;
+use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
@@ -33,6 +34,8 @@ final class PostVoter extends Voter
             return true;
         }
 
-        return $subject->getAuthor()?->getUsername() === $token->getUserIdentifier();
+        $user = $token->getUser();
+
+        return $user instanceof User && null !== $user->getId() && $subject->getAuthor()?->getUser()?->getId() === $user->getId();
     }
 }

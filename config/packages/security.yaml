@@ -1,18 +1,14 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        # demo users only: their passwords are written in clear below
-        Symfony\Component\Security\Core\User\InMemoryUser: plaintext
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory:
-            memory:
-                users:
-                    # an editor manages every post
-                    editor: { password: editor, roles: [ROLE_EDITOR] }
-                    # an author only edits their own posts, matched on the Author username
-                    Bret: { password: bret, roles: [ROLE_AUTHOR] }
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
 
     role_hierarchy:
         ROLE_EDITOR: [ROLE_AUTHOR]
@@ -25,7 +21,7 @@ security:
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
             form_login:
                 login_path: app_login
                 check_path: app_login

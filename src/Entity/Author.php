@@ -21,6 +21,13 @@ class Author
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'author')]
     private Collection $posts;
 
+    /**
+     * The account of the author, when they write from the dashboard; guest authors have none.
+     */
+    #[ORM\OneToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $user = null;
+
     public function __construct(
         #[ORM\Column(length: 100)]
         private string $name,
@@ -57,6 +64,18 @@ class Author
     public function isOnline(): bool
     {
         return $this->online;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
     }
 
     /**
