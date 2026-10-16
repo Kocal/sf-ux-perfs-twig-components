@@ -28,20 +28,19 @@ CPU times are the median of 6 interleaved runs of 60 requests per side, in the p
 
 ### Live components
 
-The performance pull requests measured together on the dashboard with its live components, against Symfony UX 3.x (804d42ba25a):
+The performance pull requests measured together on the dashboard with its live components, against Symfony UX 3.x (9ed9a9118b2):
 
-- Symfony UX: [#4105](https://github.com/symfony/ux/pull/4105), [#4106](https://github.com/symfony/ux/pull/4106), [#4107](https://github.com/symfony/ux/pull/4107)
+- Symfony UX: [#4046](https://github.com/symfony/ux/pull/4046), [#4105](https://github.com/symfony/ux/pull/4105), [#4106](https://github.com/symfony/ux/pull/4106), [#4107](https://github.com/symfony/ux/pull/4107), [#4109](https://github.com/symfony/ux/pull/4109)
 
 | Scenario | Before | After | Change |
 |---|---|---|---|
-| Dashboard, 25 rows | **62.1-66.4 ms** | **55.5-62.5 ms** | -8% |
-| Dashboard, 100 rows | **156.8-161.3 ms** | **140.5-144.5 ms** | -10% |
-| Re-rendering the posts table after ticking 3 rows | **46.3-49.2 ms** | **29.4-31.6 ms** | -36% |
-| Same, with 100 rows | **169.4-181.0 ms** | **99.6-103.7 ms** | -42% |
-| Re-rendering the posts table after typing in its search box | **53.5-54.9 ms** | **35.5-36.9 ms** | -33% |
-| Deleting the 3 ticked rows | **49.4-51.1 ms** | **30.8-32.9 ms** | -37% |
-| Refreshing the stat cards after an emitted event | **2.9-3.1 ms** | **2.3-2.5 ms** | -20% |
-| Validating a field of the post form, toggling the star of a row | within the noise | | |
+| Dashboard, 25 rows | **58.9-64.8 ms** | **50.3-58.5 ms** | -15% |
+| Dashboard, 100 rows | **144.6-154.0 ms** | **118.9-124.0 ms** | -18% |
+| Re-rendering the posts table after ticking 3 rows | **44.5-45.5 ms** | **25.6-28.5 ms** | -37% |
+| Same, with 100 rows | **154.8-166.1 ms** | **84.1-92.6 ms** | -43% |
+| Re-rendering the posts table after typing in its search box | **49.0-55.8 ms** | **29.5-34.4 ms** | -39% |
+| Deleting the 3 ticked rows | **45.3-50.3 ms** | **26.3-29.8 ms** | -43% |
+| Validating a field of the post form, toggling the star of a row, refreshing the stat cards after an emitted event | within the noise | | |
 
 All numbers are CPU medians per request, from 4 interleaved runs of 20 requests per side. Requests are logged in as `editor`, in the prod environment, with a fresh kernel per request and the database restored before each request.
 
